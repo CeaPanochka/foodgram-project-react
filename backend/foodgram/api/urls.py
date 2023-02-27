@@ -3,12 +3,12 @@ from rest_framework.routers import DefaultRouter
 
 from .views import (CreateDeleteFollowViewSet, CustomUserViewSet,
                     DownloadShoppingCartViewSet, FavoriteRecipeViewSet,
-                    IngredientViewSet, ListFollowViewSet, RecipeViewSet,
+                    IngredientViewSet, ListFollowView, RecipeViewSet,
                     ShoppingCartViewSet, TagViewSet)
 
 router = DefaultRouter()
 
-router.register(r'users/subscriptions', ListFollowViewSet,
+router.register(r'users/subscriptions', ListFollowView,
                 basename='subscriptions')
 router.register(r'users/(?P<user_id>\d+)/subscribe', CreateDeleteFollowViewSet,
                 basename='subscribe')

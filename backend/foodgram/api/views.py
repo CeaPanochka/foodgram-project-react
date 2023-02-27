@@ -1,10 +1,11 @@
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
-from recipes.models import (FavoritedRecipe, Ingredient, Recipe, ShoppingCart,
-                            Tag)
 from rest_framework import generics, mixins, viewsets
 from rest_framework.permissions import IsAuthenticated
+
+from recipes.models import (FavoritedRecipe, Ingredient, Recipe, ShoppingCart,
+                            Tag)
 from users.models import Follow, User
 
 from .filters import RecipeFilter
@@ -18,10 +19,9 @@ from .serializers import (CustomUserCreateSerializer, CustomUserSerializer,
 
 
 class CustomUserViewSet(UserViewSet):
-    queryset = User.objects.all()
+    serializer_class = CustomUserSerializer
     pagination_class = MinLimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
-    filterset_class = (OwnerOrReadOnly,)
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -33,7 +33,7 @@ class CustomUserViewSet(UserViewSet):
     def get_permissions(self):
         if self.action == 'retrieve':
             return (ReadOnly(),)
-        return super().get_permissions()
+        return super().get_permissions() 
     
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -42,7 +42,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
     pagination_class = MinLimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
-    permission_classes = ()
+    permission_classes = (OwnerOrReadOnly,)
+
+    def get_permissions(self):
+        if self.action == 'retrieve':
+            return (ReadOnly(),)
+        return super().get_permissions() 
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -55,7 +60,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
 
 
-class ListFollowViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class ListFollowView(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = UserFollowingListSerializer
     pagination_class = MinLimitOffsetPagination
     permission_classes = (IsAuthenticated,)
