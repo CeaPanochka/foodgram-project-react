@@ -2,12 +2,13 @@ import base64
 
 from django.core.files.base import ContentFile
 from django.core.validators import RegexValidator
+from django.forms import ValidationError
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
 
 from recipes.models import (FavoritedRecipe, Ingredient, Recipe, ShoppingCart,
-                            Tag)
+                            Tag, TaggedRecipe, IngredientRecipe)
 from users.models import Follow, User
 
 
@@ -70,11 +71,25 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tag
         fields = ('id', 'name', 'color', 'slug')
 
+    
+class IngredientRecipeSerializer(serializers.ModelSerializer):
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.all(),
+        required=True
+    )
+    name = serializers.ReadOnlyField(source='ingredient.name')
+    measurement_unit = serializers.ReadOnlyField(
+        source='ingredient.measurement_unit'
+    )
+    class Meta:
+        model = IngredientRecipe
+        fields = ('id', 'name', 'measurement_unit', 'amount')
+
 
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
-    ingredients = IngredientSerializer(many=True)
-    author = CustomUserSerializer()
+    ingredients = IngredientRecipeSerializer(many=True)
+    author = CustomUserSerializer(default=serializers.CurrentUserDefault())
     image = Base64ImageField(required=False, allow_null=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
@@ -92,6 +107,47 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_is_in_shopping_cart(self, obj):
         user = self.context.get('request').user
         return user in obj.shopping_users.all()
+
+
+class RecipeCreateSerializer(serializers.ModelSerializer):
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(),
+        many=True
+    )
+    ingredients = IngredientRecipeSerializer(many=True)
+    author = CustomUserSerializer(default=serializers.CurrentUserDefault())
+    image = Base64ImageField(required=False, allow_null=True)
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'tags', 'author', 'ingredients',
+                  'is_favorited', 'is_in_shopping_cart',
+                  'name', 'image', 'text', 'cooking_time')
+        
+    def get_is_favorited(self, obj):
+        user = self.context.get('request').user
+        return user in obj.following_users.all()
+    
+    def get_is_in_shopping_cart(self, obj):
+        user = self.context.get('request').user
+        return user in obj.shopping_users.all()
+
+    def create(self, validated_data):
+        tags = validated_data.pop('tags')
+        ingredients = validated_data.pop('ingredients')
+        recipe = Recipe.objects.create(**validated_data)
+        recipe.tags.set(tags)
+        for ingredient in ingredients:
+            amount = ingredient.get('amount')
+            ingredient = ingredient.get('id')
+            IngredientRecipe.objects.create(
+                ingredient=ingredient,
+                recipe=recipe,
+                amount=amount
+            )
+        return recipe
     
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)
@@ -104,17 +160,17 @@ class RecipeSerializer(serializers.ModelSerializer):
             tags_data = validated_data.pop('tags')
             lst = []
             for tag in tags_data:
-                current_tag, status = Tag.objects.get_or_create(
+                current_tag = Tag.objects.get_or_create(
                     **tag)
                 lst.append(current_tag)
             instance.tags.set(lst)
         elif 'ingredients' in validated_data:
             ingredients_data = validated_data.pop('ingredients')
             lst = []
-            for ingredient in tags_data:
-                current_ingredient, status = Ingredient.objects.get_or_create(
+            for ingredient in ingredients_data:
+                current_ingredient = Ingredient.objects.get_or_create(
                     **ingredient)
-                lst.append(ingredient)
+                lst.append(current_ingredient)
             instance.ingredients.set(lst)
 
         instance.save()

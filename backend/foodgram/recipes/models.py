@@ -11,7 +11,6 @@ UNIT = (
 
 class Ingredient(models.Model):
     name = models.CharField('Ингредиент', max_length=200)
-    amount = models.IntegerField('Количество')
     measurement_unit = models.CharField('Единица меры', choices=UNIT, max_length=200)
 
     class Meta:
@@ -42,7 +41,7 @@ class Recipe(models.Model):
     image = models.ImageField('Изображение',
                               upload_to='recipes/', blank=True)
     text = models.TextField('Описание рецепта')
-    ingredients = models.ManyToManyField(Ingredient, through='IngredientRecipe',
+    ingredients_model = models.ManyToManyField(Ingredient, through='IngredientRecipe',
                                          verbose_name='Ингредиенты',
                                          related_name='recipes')
     tags = models.ManyToManyField(Tag, through='TaggedRecipe',
@@ -67,10 +66,13 @@ class Recipe(models.Model):
 class IngredientRecipe(models.Model):
     ingredient = models.ForeignKey(
         Ingredient, verbose_name='Ингредиент',
+        related_name='recipe',
         on_delete=models.CASCADE)
     recipe = models.ForeignKey(
         Recipe, verbose_name='Рецепт',
+        related_name='ingredients',
         on_delete=models.CASCADE)
+    amount = models.IntegerField('Количество')
 
     class Meta:
         verbose_name = 'Ингедиент и рецепт'
