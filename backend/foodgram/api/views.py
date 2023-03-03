@@ -1,13 +1,13 @@
-from django.http import HttpResponse
 from django.db.models import Sum
+from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from rest_framework import generics, mixins, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 
-from recipes.models import (FavoritedRecipe, Ingredient, Recipe, ShoppingCart,
-                            Tag, IngredientRecipe)
+from recipes.models import (FavoritedRecipe, Ingredient, IngredientRecipe,
+                            Recipe, ShoppingCart, Tag)
 from users.models import Follow, User
 
 from .filters import RecipeFilter
@@ -15,10 +15,9 @@ from .pagination import MinLimitOffsetPagination
 from .permissions import OwnerOrReadOnly, ReadOnly
 from .serializers import (CustomUserCreateSerializer, CustomUserSerializer,
                           FavoritedRecipeSerializer, FollowingSerializer,
-                          IngredientSerializer, RecipeSerializer,
-                          RecipeCreateSerializer, IngredientRecipeSerializer,
-                          ShoppingCartSerializer, TagSerializer,
-                          UserFollowingListSerializer)
+                          IngredientSerializer, RecipeCreateSerializer,
+                          RecipeSerializer, ShoppingCartSerializer,
+                          TagSerializer, UserFollowingListSerializer)
 
 
 class CustomUserViewSet(UserViewSet):
@@ -32,12 +31,12 @@ class CustomUserViewSet(UserViewSet):
         elif self.action == 'me':
             return CustomUserSerializer
         return super().get_serializer_class()
-    
+
     def get_permissions(self):
         if self.action == 'retrieve':
             return (ReadOnly(),)
-        return super().get_permissions() 
-    
+        return super().get_permissions()
+
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
@@ -76,12 +75,13 @@ class ListFollowView(mixins.ListModelMixin, viewsets.GenericViewSet):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        follow_obj = User.objects.filter(follower__user_id=self.request.user.id)
+        follow_obj = User.objects.filter(
+            follower__user_id=self.request.user.id)
         return follow_obj
 
 
 class PostDeleteViewSet(mixins.CreateModelMixin, generics.DestroyAPIView,
-                               viewsets.GenericViewSet):
+                        viewsets.GenericViewSet):
     pass
 
 
@@ -96,7 +96,7 @@ class CreateDeleteFollowViewSet(PostDeleteViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-    
+
     def get_object(self):
         author_id = self.kwargs.get('user_id')
         follow_obj = Follow.objects.filter(user=self.request.user,
@@ -112,14 +112,15 @@ class FavoriteRecipeViewSet(PostDeleteViewSet):
         recipe_id = self.kwargs.get('recipe_id')
         request.data['recipe'] = recipe_id
         return super().create(request, *args, **kwargs)
-    
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
     def get_object(self):
         recipe_id = self.kwargs.get('recipe_id')
-        favorite_recipe_obj = FavoritedRecipe.objects.filter(user=self.request.user,
-                                                             recipe=recipe_id)
+        favorite_recipe_obj = FavoritedRecipe.objects.filter(
+            user=self.request.user,
+            recipe=recipe_id)
         return favorite_recipe_obj
 
 
@@ -137,10 +138,12 @@ class ShoppingCartViewSet(PostDeleteViewSet):
 
     def get_object(self):
         recipe_id = self.kwargs.get('recipe_id')
-        shopping_cart_recipe_obj = ShoppingCart.objects.filter(user=self.request.user,
-                                                               recipe=recipe_id)
+        shopping_cart_recipe_obj = ShoppingCart.objects.filter(
+            user=self.request.user,
+            recipe=recipe_id)
         return shopping_cart_recipe_obj
-    
+
+
 @api_view(['GET'])
 def download_shopping_cart(request):
     print(request)
@@ -149,11 +152,9 @@ def download_shopping_cart(request):
                    .filter(recipe__shopping_users=user)
                    .values('ingredient')
                    .annotate(sum_amount=Sum('amount'))
-                   .values_list(
-                        'ingredient__name',
-                        'ingredient__measurement_unit',
-                        'sum_amount'
-                   ))
+                   .values_list('ingredient__name',
+                                'ingredient__measurement_unit',
+                                'sum_amount'))
     file_list = []
 
     [
@@ -163,9 +164,10 @@ def download_shopping_cart(request):
     ]
 
     file = HttpResponse(
-        'Список покупок: \n' + '\n'.join(file_list), headers={
-        'Content-Type': 'text/plain',
-        'Content-Disposition': 'attachment; filename="ingredients.txt"',}
+        'Список покупок: \n' + '\n'.join(file_list),
+        headers={'Content-Type': 'text/plain',
+                 'Content-Disposition': ('attachment;'
+                                         'filename="ingredients.txt"')}
     )
 
     return file

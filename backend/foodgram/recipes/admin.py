@@ -8,15 +8,19 @@ class TaggedRecipeInlane(admin.TabularInline):
     model = TaggedRecipe
     extra = 1
 
+
 class IngredientRecipeInlane(admin.TabularInline):
     model = IngredientRecipe
     extra = 1
 
+
 class TagAdmin(admin.ModelAdmin):
     inlines = [TaggedRecipeInlane]
 
+
 class IngredientAdmin(admin.ModelAdmin):
     inlines = [IngredientRecipeInlane]
+
 
 class RecipeAdmin(admin.ModelAdmin):
     inlines = [TaggedRecipeInlane, IngredientRecipeInlane]
