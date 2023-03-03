@@ -3,11 +3,10 @@ import base64
 from django.core.files.base import ContentFile
 from django.core.validators import RegexValidator
 from djoser.serializers import UserCreateSerializer, UserSerializer
-from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
-
 from recipes.models import (FavoritedRecipe, Ingredient, IngredientRecipe,
                             Recipe, ShoppingCart, Tag)
+from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
 from users.models import Follow, User
 
 
