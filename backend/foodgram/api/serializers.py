@@ -156,24 +156,19 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         instance.text = validated_data.get(
             'text', instance.text)
         instance.image = validated_data.get('image', instance.image)
-        if 'tags' in validated_data:
-            tags_data = validated_data.pop('tags')
-            lst = []
-            for tag in tags_data:
-                current_tag = Tag.objects.get_or_create(
-                    **tag)
-                lst.append(current_tag)
-            instance.tags.set(lst)
-        elif 'ingredients' in validated_data:
-            ingredients_data = validated_data.pop('ingredients')
-            lst = []
+        tags = validated_data.get('tags', instance.tags)
+        instance.tags.set(tags)
+        if 'ingredients' in validated_data:
+            ingredients_data = validated_data.get('ingredients')
             for ingredient in ingredients_data:
-                current_ingredient = Ingredient.objects.get_or_create(
-                    **ingredient)
-                lst.append(current_ingredient)
-            instance.ingredients.set(lst)
-
-        instance.save()
+                amount = ingredient.get('amount')
+                ingredient = ingredient.get('id')
+                ir = IngredientRecipe.objects.filter(ingredient=ingredient,
+                                                recipe=instance)
+                instance.ingredients__amount = amount
+                instance.save()
+        else:
+            instance.save()
         return instance 
 
 
