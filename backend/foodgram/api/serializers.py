@@ -33,6 +33,7 @@ class CustomUserSerializer(UserSerializer):
         if self.context.get('request'):
             user = self.context.get('request').user
             return Follow.objects.filter(user=user, author=obj).exists()
+        return None
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
