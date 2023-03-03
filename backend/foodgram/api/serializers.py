@@ -91,7 +91,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
     ingredients = IngredientRecipeSerializer(many=True)
     author = CustomUserSerializer(default=serializers.CurrentUserDefault())
-    image = Base64ImageField(required=False, allow_null=True)
+    image = Base64ImageField(allow_null=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
@@ -117,7 +117,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     )
     ingredients = IngredientRecipeSerializer(many=True)
     author = CustomUserSerializer(default=serializers.CurrentUserDefault())
-    image = Base64ImageField(required=False, allow_null=True)
+    image = Base64ImageField(allow_null=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
