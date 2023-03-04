@@ -2,11 +2,12 @@ from django.db.models import Sum
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
-from recipes.models import (FavoritedRecipe, Ingredient, IngredientRecipe,
-                            Recipe, ShoppingCart, Tag)
 from rest_framework import generics, mixins, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
+
+from recipes.models import (FavoritedRecipe, Ingredient, IngredientRecipe,
+                            Recipe, ShoppingCart, Tag)
 from users.models import Follow, User
 
 from .filters import RecipeFilter

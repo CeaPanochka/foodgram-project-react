@@ -3,10 +3,11 @@ import base64
 from django.core.files.base import ContentFile
 from django.core.validators import RegexValidator
 from djoser.serializers import UserCreateSerializer, UserSerializer
-from recipes.models import (FavoritedRecipe, Ingredient, IngredientRecipe,
-                            Recipe, ShoppingCart, Tag)
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
+
+from recipes.models import (FavoritedRecipe, Ingredient, IngredientRecipe,
+                            Recipe, ShoppingCart, Tag)
 from users.models import Follow, User
 
 
@@ -144,7 +145,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             amount = ingredient.get('amount')
             ingredient = ingredient.get('id')
             IngredientRecipe.objects.create(
-                ingredient=ingredient,
+                ingredient=ingredient.id,
                 recipe=recipe,
                 amount=amount
             )
@@ -162,13 +163,18 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         instance.tags.set(tags)
         if 'ingredients' in validated_data:
             ingredients_data = validated_data.get('ingredients')
+            IngredientRecipe.objects.filter(recipe=instance).delete()
             for ingredient in ingredients_data:
                 amount = ingredient.get('amount')
                 ingredient = ingredient.get('id')
-                instance.ingredients__amount = amount
-                instance.save()
-        else:
-            instance.save()
+                print(ingredient)
+                IngredientRecipe.objects.get_or_create(
+                    recipe=instance,
+                    ingredient=ingredient,
+                    amount=amount
+                )
+        print(instance.ingredients.all())
+        instance.save()
         return instance
 
 
