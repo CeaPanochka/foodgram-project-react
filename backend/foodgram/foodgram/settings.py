@@ -159,5 +159,6 @@ EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
 CORS_URLS_REGEX = r'^/api/.*$'
 
 CORS_ALLOWED_ORIGINS = [
+    'http://158.160.40.102:3000',
     'http://localhost:3000',
 ]
