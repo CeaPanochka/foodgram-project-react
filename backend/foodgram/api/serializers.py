@@ -144,7 +144,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             amount = ingredient.get('amount')
             ingredient = ingredient.get('id')
             IngredientRecipe.objects.create(
-                ingredient=ingredient.id,
+                ingredient=ingredient,
                 recipe=recipe,
                 amount=amount
             )
@@ -166,13 +166,11 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             for ingredient in ingredients_data:
                 amount = ingredient.get('amount')
                 ingredient = ingredient.get('id')
-                print(ingredient)
                 IngredientRecipe.objects.get_or_create(
                     recipe=instance,
                     ingredient=ingredient,
                     amount=amount
                 )
-        print(instance.ingredients.all())
         instance.save()
         return instance
 
