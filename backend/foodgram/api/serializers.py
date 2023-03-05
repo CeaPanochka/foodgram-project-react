@@ -31,10 +31,10 @@ class CustomUserSerializer(UserSerializer):
                   'first_name', 'last_name', 'is_subscribed')
 
     def get_is_subscribed(self, obj):
-        if self.context.get('request'):
-            user = self.context.get('request').user
-            return Follow.objects.filter(user=user, author=obj).exists()
-        return None
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return Follow.objects.filter(user=user, author=obj).exists()
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
@@ -100,7 +100,6 @@ class RecipeSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     tags = TagSerializer(many=True)
     ingredients = serializers.SerializerMethodField()
-    image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
