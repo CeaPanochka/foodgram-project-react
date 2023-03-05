@@ -151,14 +151,14 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     def get_is_in_shopping_cart(self, obj):
         user = self.context.get('request').user
         return user in obj.shopping_users.all()
-    
+
     @transaction.atomic
     def create_ingredients(self, recipe, ingredients):
         IngredientRecipe.objects.bulk_create(
             IngredientRecipe(
-            recipe=recipe,
-            ingredient=Ingredient.objects.get(id=ingredient.get('id')),
-            amount=ingredient.get('amount')
+                recipe=recipe,
+                ingredient=Ingredient.objects.get(id=ingredient.get('id')),
+                amount=ingredient.get('amount')
             ) for ingredient in ingredients)
 
     @transaction.atomic
@@ -181,7 +181,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         self.create_ingredients(instance, ingredients)
         instance.save()
         return instance
-    
+
     def to_representation(self, instance):
         context = {'request': self.context.get('request')}
         return RecipeSerializer(instance, context=context).data

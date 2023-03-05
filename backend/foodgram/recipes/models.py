@@ -28,10 +28,10 @@ class Tag(models.Model):
     color = models.CharField(
         'HEX-код', max_length=7,
         null=True, validators=[
-        RegexValidator(
-        '^#([a-fA-F0-9]{6})',
-        message='Введите HEX-код'
-        )
+            RegexValidator(
+                '^#([a-fA-F0-9]{6})',
+                message='Введите HEX-код'
+            )
         ])
     slug = models.SlugField('Ссылка на тег', max_length=200, unique=True)
 
