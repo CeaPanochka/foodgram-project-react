@@ -133,7 +133,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         many=True
     )
     ingredients = IngredientRecipeCreateSerializer(many=True)
-    author = CustomUserSerializer(default=serializers.CurrentUserDefault())
+    author = CustomUserSerializer(read_only=True)
     image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
@@ -163,9 +163,11 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
+        user = self.context.get('request').user
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
-        recipe = Recipe.objects.create(**validated_data)
+        recipe = Recipe.objects.create(author=user,
+                                       **validated_data)
         recipe.tags.set(tags)
         self.create_ingredients(recipe, ingredients)
         return recipe
