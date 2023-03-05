@@ -51,7 +51,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return super().get_serializer_class()
 
     def get_permissions(self):
-        if self.action == 'retrieve':
+        if self.action in ('list', 'retrieve'):
             return (ReadOnly(),)
         elif self.action == 'create':
             return (IsAuthenticated(),)

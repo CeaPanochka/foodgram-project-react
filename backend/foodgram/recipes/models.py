@@ -1,3 +1,4 @@
+from django.core.validators import RegexValidator
 from django.db import models
 from users.models import User
 
@@ -19,12 +20,19 @@ class Ingredient(models.Model):
         verbose_name_plural = 'Ингредиенты'
 
     def __str__(self) -> str:
-        return self.name
+        return f'{self.name}, {self.measurement_unit}'
 
 
 class Tag(models.Model):
-    name = models.CharField('Тег', max_length=200)
-    color = models.CharField('HEX-код', max_length=7)
+    name = models.CharField('Название', max_length=200)
+    color = models.CharField(
+        'HEX-код', max_length=7,
+        null=True, validators=[
+        RegexValidator(
+        '^#([a-fA-F0-9]{6})',
+        message='Введите HEX-код'
+        )
+        ])
     slug = models.SlugField('Ссылка на тег', max_length=200, unique=True)
 
     class Meta:
@@ -43,10 +51,12 @@ class Recipe(models.Model):
     image = models.ImageField('Изображение',
                               upload_to='recipes/')
     text = models.TextField('Описание рецепта')
-    ingredients_model = models.ManyToManyField(Ingredient,
-                                               through='IngredientRecipe',
-                                               verbose_name='Ингредиенты',
-                                               related_name='recipes')
+    ingredients = models.ManyToManyField(
+        Ingredient,
+        through='IngredientRecipe',
+        through_fields=('recipe', 'ingredient'),
+        verbose_name='Ингредиенты',
+        related_name='recipes')
     tags = models.ManyToManyField(Tag, through='TaggedRecipe',
                                   verbose_name='Теги', related_name='recipes')
     cooking_time = models.IntegerField(
@@ -61,8 +71,13 @@ class Recipe(models.Model):
                                             verbose_name='Корзина',
                                             related_name='recipes_in_cart',
                                             blank=True)
+    pub_date = models.DateTimeField(
+        'Дата публикации',
+        auto_now_add=True
+    )
 
     class Meta:
+        ordering = ['-pub_date']
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 
@@ -77,7 +92,7 @@ class IngredientRecipe(models.Model):
         on_delete=models.CASCADE)
     recipe = models.ForeignKey(
         Recipe, verbose_name='Рецепт',
-        related_name='ingredients',
+        related_name='ingredient_list',
         on_delete=models.CASCADE)
     amount = models.IntegerField('Количество')
 
