@@ -141,7 +141,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     def get_is_in_shopping_cart(self, obj):
         user = self.context.get('request').user
         return user in obj.shopping_users.all()
-    
+
     def validate_ingredients(self, value):
         ingredients = value
         if not ingredients:
