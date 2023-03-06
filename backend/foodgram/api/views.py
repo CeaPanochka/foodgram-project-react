@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from users.models import Follow, User
 
-from .filters import RecipeFilter, IngredientFilter
+from .filters import IngredientFilter, RecipeFilter
 from .pagination import CustomPagination
 from .permissions import OwnerOrReadOnly, ReadOnly
 from .serializers import (CustomUserCreateSerializer, CustomUserSerializer,
