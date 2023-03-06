@@ -8,6 +8,9 @@ services:
       - ./.env
   web:
     image: panaceati/foodgram_back:latest
+    # build:
+    #   context: ../backend/foodgram/
+    #   dockerfile: Dockerfile
     restart: always
     volumes:
       - static_value:/app/backend_static/

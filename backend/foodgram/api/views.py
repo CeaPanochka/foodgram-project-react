@@ -9,8 +9,8 @@ from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from users.models import Follow, User
 
-from .filters import RecipeFilter
-from .pagination import MinLimitOffsetPagination
+from .filters import RecipeFilter, IngredientFilter
+from .pagination import CustomPagination
 from .permissions import OwnerOrReadOnly, ReadOnly
 from .serializers import (CustomUserCreateSerializer, CustomUserSerializer,
                           FavoritedRecipeSerializer, FollowingSerializer,
@@ -21,7 +21,7 @@ from .serializers import (CustomUserCreateSerializer, CustomUserSerializer,
 
 class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
-    pagination_class = MinLimitOffsetPagination
+    pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
 
     def get_serializer_class(self):
@@ -40,7 +40,7 @@ class CustomUserViewSet(UserViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeCreateSerializer
-    pagination_class = MinLimitOffsetPagination
+    pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     permission_classes = (OwnerOrReadOnly,)
@@ -66,11 +66,13 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = IngredientFilter
 
 
 class ListFollowView(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = UserFollowingListSerializer
-    pagination_class = MinLimitOffsetPagination
+    pagination_class = CustomPagination
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
