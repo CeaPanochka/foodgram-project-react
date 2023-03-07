@@ -156,8 +156,9 @@ def download_shopping_cart(request):
                    .values_list('ingredient__name',
                                 'ingredient__measurement_unit',
                                 'sum_amount'))
-    
-    file_list = ['{} {} - {}'.format(*ingredient) for ingredient in ingredients]
+
+    file_list = [
+        '{} {} - {}'.format(*ingredient) for ingredient in ingredients]
 
     file = HttpResponse(
         'Список покупок: \n' + '\n'.join(file_list),
