@@ -71,7 +71,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_class = IngredientFilter
 
 
-class ListFollowView(mixins.ListModelMixin, viewsets.GenericViewSet):
+class ListFollow(generics.ListAPIView):
     serializer_class = UserFollowingListSerializer
     pagination_class = CustomPagination
     permission_classes = (IsAuthenticated,)
@@ -148,7 +148,6 @@ class ShoppingCartViewSet(PostDeleteViewSet):
 
 @api_view(['GET'])
 def download_shopping_cart(request):
-    print(request)
     user = request.user
     ingredients = (IngredientRecipe.objects
                    .filter(recipe__shopping_users=user)
@@ -157,13 +156,8 @@ def download_shopping_cart(request):
                    .values_list('ingredient__name',
                                 'ingredient__measurement_unit',
                                 'sum_amount'))
-    file_list = []
-
-    [
-        file_list.append(
-            '{} {} - {}'
-            .format(*ingredient)) for ingredient in ingredients
-    ]
+    
+    file_list = ['{} {} - {}'.format(*ingredient) for ingredient in ingredients]
 
     file = HttpResponse(
         'Список покупок: \n' + '\n'.join(file_list),

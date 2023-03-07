@@ -2,14 +2,12 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from .views import (CreateDeleteFollowViewSet, CustomUserViewSet,
-                    FavoriteRecipeViewSet, IngredientViewSet, ListFollowView,
+                    FavoriteRecipeViewSet, IngredientViewSet, ListFollow,
                     RecipeViewSet, ShoppingCartViewSet, TagViewSet,
                     download_shopping_cart)
 
 router = DefaultRouter()
 
-router.register(r'users/subscriptions', ListFollowView,
-                basename='subscriptions')
 router.register(r'users/(?P<user_id>\d+)/subscribe', CreateDeleteFollowViewSet,
                 basename='subscribe')
 router.register(r'users', CustomUserViewSet)
@@ -27,6 +25,8 @@ router.register('ingredients', IngredientViewSet)
 
 
 urlpatterns = [
+    path('users/subscriptions/', ListFollow.as_view(),
+         name='subscriptions'),
     path('recipes/download_shopping_cart/',
          download_shopping_cart, name='download_chopping'),
     path('', include(router.urls)),
